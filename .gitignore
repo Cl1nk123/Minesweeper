@@ -1,0 +1,7 @@
+minesweeper
+*.o
+*.log
+records.txt
+savegame.dat
+.DS_Store
+.vscode/
