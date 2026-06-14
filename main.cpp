@@ -47,7 +47,16 @@ bool ioGame(bool save) {
     #define RW(v) (save ? (void)f.write((char*)&v, sizeof(v)) : (void)f.read((char*)&v, sizeof(v)))
     RW(cols); RW(rows); RW(totalMines); RW(elapsedTime); RW(moves); RW(firstClick); RW(grid); RW(sgrid);
     #undef RW
-    if (!save) { gameClock.restart(); gameActive = true; state = PLAYING; }
+    if (!save) {
+        // Проверка корректности загруженных данных
+        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return false;
+        if (totalMines < 1 || totalMines >= cols * rows) return false;
+        for (int i = 0; i < cols * rows; ++i) {
+            int v = grid[i % cols + 1][i / cols + 1];
+            if (v < 0 || v > 9) return false;
+        }
+        gameClock.restart(); gameActive = true; state = PLAYING;
+    }
     return true;
 }
 
