@@ -49,11 +49,20 @@ bool ioGame(bool save) {
     #undef RW
     if (!save) {
         // Проверка корректности загруженных данных
-        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return false;
-        if (totalMines < 1 || totalMines >= cols * rows) return false;
+        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) {
+            std::cerr << "Error: save file corrupted (invalid field size)\n";
+            return false;
+        }
+        if (totalMines < 1 || totalMines >= cols * rows) {
+            std::cerr << "Error: save file corrupted (invalid mine count)\n";
+            return false;
+        }
         for (int i = 0; i < cols * rows; ++i) {
             int v = grid[i % cols + 1][i / cols + 1];
-            if (v < 0 || v > 9) return false;
+            if (v < 0 || v > 9) {
+                std::cerr << "Error: save file corrupted (invalid cell value)\n";
+                return false;
+            }
         }
         gameClock.restart(); gameActive = true; state = PLAYING;
     }
@@ -163,7 +172,7 @@ int main() {
                     else if (bHard.getGlobalBounds().contains(Vector2f{mx, my})) { cols=30; rows=16; totalMines=99; start=true; }
                     else if (bLoad.getGlobalBounds().contains(Vector2f{mx, my})) {
                         if (ioGame(false)) { logOn=true; logAct("\n--- LOADED ---"); app.create(VideoMode({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}), "Игра"); }
-                        else statTxt.setString("No save!");
+                        else statTxt.setString("Ошибка: файл сохранения повреждён или не найден!");
                     }
                     if (start) {
                         state = PLAYING; resetGame(); gameActive = logOn = true;
