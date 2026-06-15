@@ -42,12 +42,25 @@ void logAct(const std::string& act) {
 }
 
 bool ioGame(bool save) {
-    std::fstream f("savegame.dat", save ? (std::ios::out | std::ios::binary) : (std::ios::in | std::ios::binary));
-    if (!f) return false;
-    #define RW(v) (save ? (void)f.write((char*)&v, sizeof(v)) : (void)f.read((char*)&v, sizeof(v)))
-    RW(cols); RW(rows); RW(totalMines); RW(elapsedTime); RW(moves); RW(firstClick); RW(grid); RW(sgrid);
-    #undef RW
-    if (!save) {
+    if (save) {
+        std::ofstream f("savegame.txt");
+        if (!f) return false;
+        f << cols << " " << rows << " " << totalMines << " "
+          << elapsedTime << " " << moves << " " << firstClick << "\n";
+        for (int i = 0; i < cols * rows; ++i)
+            f << grid[i % cols + 1][i / cols + 1] << " ";
+        f << "\n";
+        for (int i = 0; i < cols * rows; ++i)
+            f << sgrid[i % cols + 1][i / cols + 1] << " ";
+        f << "\n";
+    } else {
+        std::ifstream f("savegame.txt");
+        if (!f) return false;
+        f >> cols >> rows >> totalMines >> elapsedTime >> moves >> firstClick;
+        for (int i = 0; i < cols * rows; ++i)
+            f >> grid[i % cols + 1][i / cols + 1];
+        for (int i = 0; i < cols * rows; ++i)
+            f >> sgrid[i % cols + 1][i / cols + 1];
         // Проверка корректности загруженных данных
         if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return false;
         if (totalMines < 1 || totalMines >= cols * rows) return false;
