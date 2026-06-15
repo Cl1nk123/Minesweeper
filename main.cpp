@@ -49,20 +49,11 @@ bool ioGame(bool save) {
     #undef RW
     if (!save) {
         // Проверка корректности загруженных данных
-        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) {
-            std::cerr << "Error: save file corrupted (invalid field size)\n";
-            return false;
-        }
-        if (totalMines < 1 || totalMines >= cols * rows) {
-            std::cerr << "Error: save file corrupted (invalid mine count)\n";
-            return false;
-        }
+        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return false;
+        if (totalMines < 1 || totalMines >= cols * rows) return false;
         for (int i = 0; i < cols * rows; ++i) {
             int v = grid[i % cols + 1][i / cols + 1];
-            if (v < 0 || v > 9) {
-                std::cerr << "Error: save file corrupted (invalid cell value)\n";
-                return false;
-            }
+            if (v < 0 || v > 9) return false;
         }
         gameClock.restart(); gameActive = true; state = PLAYING;
     }
