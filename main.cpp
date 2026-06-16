@@ -41,10 +41,11 @@ void logAct(const std::string& act) {
     logFile.flush();
 }
 
-bool ioGame(bool save) {
+// Возвращает: 1 = успех, 0 = файл не найден, -1 = файл повреждён
+int ioGame(bool save) {
     if (save) {
         std::ofstream f("savegame.txt");
-        if (!f) return false;
+        if (!f) return 0;
         f << cols << " " << rows << " " << totalMines << " "
           << elapsedTime << " " << moves << " " << firstClick << "\n";
         for (int i = 0; i < cols * rows; ++i)
@@ -55,22 +56,22 @@ bool ioGame(bool save) {
         f << "\n";
     } else {
         std::ifstream f("savegame.txt");
-        if (!f) return false;
+        if (!f) return 0;
         f >> cols >> rows >> totalMines >> elapsedTime >> moves >> firstClick;
         for (int i = 0; i < cols * rows; ++i)
             f >> grid[i % cols + 1][i / cols + 1];
         for (int i = 0; i < cols * rows; ++i)
             f >> sgrid[i % cols + 1][i / cols + 1];
         // Проверка корректности загруженных данных
-        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return false;
-        if (totalMines < 1 || totalMines >= cols * rows) return false;
+        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return -1;
+        if (totalMines < 1 || totalMines >= cols * rows) return -1;
         for (int i = 0; i < cols * rows; ++i) {
             int v = grid[i % cols + 1][i / cols + 1];
-            if (v < 0 || v > 9) return false;
+            if (v < 0 || v > 9) return -1;
         }
         gameClock.restart(); gameActive = true; state = PLAYING;
     }
-    return true;
+    return 1;
 }
 
 // --- Игровая логика (БЕЗ ДВОЙНЫХ ЦИКЛОВ) ---
@@ -175,8 +176,10 @@ int main() {
                     else if (bMed.getGlobalBounds().contains(Vector2f{mx, my})) { cols=16; rows=16; totalMines=40; start=true; }
                     else if (bHard.getGlobalBounds().contains(Vector2f{mx, my})) { cols=30; rows=16; totalMines=99; start=true; }
                     else if (bLoad.getGlobalBounds().contains(Vector2f{mx, my})) {
-                        if (ioGame(false)) { logOn=true; logAct("\n--- LOADED ---"); app.create(VideoMode({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}), "Игра"); }
-                        else statTxt.setString("Ошибка: файл сохранения повреждён или не найден!");
+                        int res = ioGame(false);
+                        if (res == 1) { logOn=true; logAct("\n--- LOADED ---"); app.create(VideoMode({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}), "Игра"); }
+                        else if (res == 0) statTxt.setString("Сохранение не найдено!");
+                        else statTxt.setString("Ошибка: файл сохранения повреждён!");
                     }
                     if (start) {
                         state = PLAYING; resetGame(); gameActive = logOn = true;
