@@ -57,17 +57,34 @@ int ioGame(bool save) {
     } else {
         std::ifstream f("savegame.txt");
         if (!f) return 0;
-        f >> cols >> rows >> totalMines >> elapsedTime >> moves >> firstClick;
-        for (int i = 0; i < cols * rows; ++i)
-            f >> grid[i % cols + 1][i / cols + 1];
-        for (int i = 0; i < cols * rows; ++i)
-            f >> sgrid[i % cols + 1][i / cols + 1];
-        // Проверка корректности загруженных данных
-        if (cols < 1 || cols > MAX_C || rows < 1 || rows > MAX_R) return -1;
-        if (totalMines < 1 || totalMines >= cols * rows) return -1;
-        for (int i = 0; i < cols * rows; ++i) {
-            int v = grid[i % cols + 1][i / cols + 1];
+
+        int tmpCols, tmpRows, tmpMines, tmpMoves, tmpFirst;
+        float tmpTime;
+        if (!(f >> tmpCols >> tmpRows >> tmpMines >> tmpTime >> tmpMoves >> tmpFirst))
+            return -1;
+
+        // Проверяем размеры ДО чтения массивов — иначе цикл вылетит за границы
+        if (tmpCols < 1 || tmpCols > MAX_C || tmpRows < 1 || tmpRows > MAX_R) return -1;
+        if (tmpMines < 1 || tmpMines >= tmpCols * tmpRows) return -1;
+
+        int tmpGrid[MAX_C][MAX_R], tmpSgrid[MAX_C][MAX_R];
+        for (int i = 0; i < tmpCols * tmpRows; ++i)
+            if (!(f >> tmpGrid[i % tmpCols + 1][i / tmpCols + 1])) return -1;
+        for (int i = 0; i < tmpCols * tmpRows; ++i)
+            if (!(f >> tmpSgrid[i % tmpCols + 1][i / tmpCols + 1])) return -1;
+
+        // Проверяем значения клеток
+        for (int i = 0; i < tmpCols * tmpRows; ++i) {
+            int v = tmpGrid[i % tmpCols + 1][i / tmpCols + 1];
             if (v < 0 || v > 9) return -1;
+        }
+
+        // Всё ок — применяем загруженные данные
+        cols = tmpCols; rows = tmpRows; totalMines = tmpMines;
+        elapsedTime = tmpTime; moves = tmpMoves; firstClick = tmpFirst;
+        for (int i = 0; i < cols * rows; ++i) {
+            grid[i % cols + 1][i / cols + 1]  = tmpGrid[i % cols + 1][i / cols + 1];
+            sgrid[i % cols + 1][i / cols + 1] = tmpSgrid[i % cols + 1][i / cols + 1];
         }
         gameClock.restart(); gameActive = true; state = PLAYING;
     }
