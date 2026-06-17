@@ -194,14 +194,14 @@ int main() {
                     else if (bHard.getGlobalBounds().contains(Vector2f{mx, my})) { cols=30; rows=16; totalMines=99; start=true; }
                     else if (bLoad.getGlobalBounds().contains(Vector2f{mx, my})) {
                         int res = ioGame(false);
-                        if (res == 1) { logOn=true; logAct("\n--- LOADED ---"); app.create(VideoMode({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}), "Игра"); }
+                        if (res == 1) { logOn=true; logAct("\n--- LOADED ---"); app.setSize({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}); app.setTitle("Игра"); }
                         else if (res == 0) statTxt.setString("Сохранение не найдено!");
                         else statTxt.setString("Ошибка: файл сохранения повреждён!");
                     }
                     if (start) {
                         state = PLAYING; resetGame(); gameActive = logOn = true;
                         logAct("\n--- NEW GAME (" + std::to_string(cols) + "x" + std::to_string(rows) + ") ---");
-                        app.create(VideoMode({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}), "Minesweeper");
+                        app.setSize({(unsigned)((cols+2)*32), (unsigned)((rows+3)*32)}); app.setTitle("Minesweeper");
                     }
                 } else if (state == PLAYING) {
                     int x = (int)mx / 32, y = (int)my / 32;
@@ -230,7 +230,7 @@ int main() {
                     }
                 } else if ((state == GAME_OVER || state == GAME_WON) && mb->button == Mouse::Button::Left) {
                     state = MENU; if (logFile.is_open()) logFile.close(); loadRecords();
-                    app.create(VideoMode({800u, 600u}), "Minesweeper Menu");
+                    app.setSize({800u, 600u}); app.setTitle("Minesweeper Menu");
                 }
             }
 
